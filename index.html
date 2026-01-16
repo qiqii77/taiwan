@@ -208,47 +208,60 @@
             border: 0;
         }
 
-        /* 互動組件 */
-        .poll-box {
-            background: #151515;
-            padding: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            margin-top: 40px;
+        /* 互動組件通用樣式 */
+        .interactive-tool { background: #151515; padding: 25px; border: 1px solid #333; margin: 20px 0; border-radius: 4px; }
+        .slider-wrap { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+        input[type="range"] { flex: 1; cursor: pointer; accent-color: var(--sitcon-blue); }
+        
+        /* --- 新增：便利貼牆風格樣式 --- */
+        .sticky-note-wall {
+            background-color: #f4e8c1; /* 淡黃色底 */
+            background-image: linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 20px 20px; /* 方格紋理 */
+            border: none;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            color: #333; /* 深色文字以利閱讀 */
+            position: relative;
+            transform: rotate(-1deg); /* 輕微傾斜增加真實感 */
+        }
+        /* 便利貼上的輸入框樣式 */
+        textarea#userInput {
+            width: 100%; height: 100px; padding: 10px;
+            background: rgba(255,255,255,0.5); border: 2px dashed #aaa;
+            font-family: 'Noto Sans TC', sans-serif; color: #333;
+            resize: vertical; margin-bottom: 15px; font-size: 1rem;
+        }
+        /* 便利貼上的按鈕樣式 */
+        .sticky-btn {
+            background: #333; color: #f4e8c1; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .sticky-btn:hover { background: var(--accent-color); color: #fff; }
+        /* 便利貼上的產出結果樣式 */
+        #sevenText {
+            margin-top: 15px; padding: 15px;
+            background: rgba(255,255,255,0.8);
+            border-left: 4px solid var(--accent-color);
+            color: var(--accent-color); font-weight: bold;
+            min-height: 60px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+        /* ------------------------- */
+
+        #flood-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 80, 150, 0); pointer-events: none; z-index: 5; transition: background 0.3s;
         }
 
-        .btn {
-            background: transparent;
-            border: 1px solid var(--sitcon-blue);
-            color: var(--sitcon-blue);
-            padding: 10px 25px;
-            cursor: pointer;
-            margin: 10px;
-            transition: 0.3s;
-        }
+        .poll-box { background: #151515; padding: 30px; border: 1px solid rgba(255,255,255,0.05); margin-top: 40px; }
+        .btn { background: transparent; border: 1px solid var(--sitcon-blue); color: var(--sitcon-blue); padding: 10px 25px; cursor: pointer; margin: 10px; transition: 0.3s; }
+        .btn:hover { background: var(--sitcon-blue); color: #000; }
 
-        .btn:hover {
-            background: var(--sitcon-blue);
-            color: #000;
-        }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; margin-top: 20px; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
-        .reveal {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: all 1s ease-out;
-        }
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 1s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
 
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        footer {
-            padding: 60px;
-            text-align: center;
-            background: #050505;
-            color: #555;
-            font-size: 0.8rem;
-        }
+        footer { padding: 40px; text-align: center; background: #050505; color: #555; font-size: 0.8rem; }
     </style>
 </head>
 
@@ -266,18 +279,16 @@
 
     <section class="hero">
         <video autoplay muted loop class="video-background">
-            <source
-                src="https://assets.mixkit.co/videos/preview/mixkit-crashing-waves-on-the-shore-at-sunset-34371-large.mp4"
-                type="video/mp4">
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-crashing-waves-on-the-shore-at-sunset-34371-large.mp4" type="video/mp4">
         </video>
         <div class="reveal">
             <h1 class="serif">在荒島邊緣</h1>
             <h2 style="font-size: 1.8rem; color: var(--text-color); margin-bottom: 20px;">關於七等生的精神長征</h2>
-            <p>世界是個巨大的牢籠，而文學是唯一的逃生口。七等生，在 1960 年代的台灣文壇劈開了一道冷冽的裂縫。</p>
+            <p>1960 年代，台灣現代文學在封閉政治中宣告成熟。七等生在此刻劈開了一道冷冽的裂縫。</p>
         </div>
     </section>
 
-   <section class="section" id="ch1">
+    <section class="section" id="ch1">
         <div class="container reveal">
             <div class="text-box">
                 <div class="chapter-num">01</div>
@@ -289,32 +300,45 @@
                 <div class="subsection">
                     <h3>1-2 拒絕被定義</h3>
                     <p>「七等生」這個筆名本身就是一種對社會位階的嘲弄。劉武雄刻意選擇一個代表「劣等」或「後段」的標籤，作為他與世界對話的身分。這種自我降格的姿態，實際上隱藏著極大的驕傲與超越。他深知在集體主義與教條美學盛行的時代，任何試圖追求絕對個體自主的嘗試都會被視為異類，因此他乾脆先把自己放逐到邊緣，在那裡獲得真正的寫作自由。他在日間是沈默的教師，在夜間則是解剖人性的屠夫。這種雙重身分使他得以在社會體制的夾縫中，用筆名構築起一個冷冽的精神國度，在那裡，沒有任何領袖、道德或規則可以約束他的想像力。</p>
+                    <div class="interactive-tool">
+                        <p><strong>【身分滑桿】試著調整作家的邊緣程度：</strong></p>
+                        <div class="slider-wrap">
+                            <span>一等生 (主流)</span>
+                            <input type="range" id="identitySlider" min="1" max="7" value="4">
+                            <span>七等生 (邊緣)</span>
+                        </div>
+                        <p id="identityText" style="margin-top: 15px; color: var(--sitcon-blue); font-style: italic;">他在體制的夾縫中，尋找寫作的自由。</p>
+                    </div>
                 </div>
             </div>
-
             <div class="image-box">
-                <div style="margin-bottom: 30px;">
+                <div>
                     <img src="https://issues.ptsplus.tv/wp-content/uploads/2023/07/%E3%80%8A%E5%89%8A%E7%98%A6%E7%9A%84%E9%9D%88%E9%AD%82%E3%80%8B01.jpg" alt="七等生照片">
-                    <p class="img-caption">作家七等生（劉武雄，1939-2020）[cite: 119, 131]</p>
+                    <p class="img-caption">作家七等生（劉武雄，1939-2020）</p>
                 </div>
-
                 <div>
                     <img src="https://dcm.s3.hicloud.net.tw/new/excel/object/2023-06-09/51b119fd-1e50-4300-9e72-658b0af1cf6a/collection/5362b758-5695-4032-8ee6-13f1fb6b3602/32370f54-38d1-4d79-a641-6f2af64ea0c4_c.jpg" alt="手稿">
-                    <p class="img-caption">七等生〈克里辛娜〉手稿 [cite: 78]</p>
+                    <p class="img-caption">七等生〈克里辛娜〉手稿</p>
                 </div>
             </div>
         </div>
     </section>
-    
-    <section class="section" id="ch2"
-        style="background: linear-gradient(rgba(10,10,10,0.9), rgba(10,10,10,0.9)), url('https://www.loc.gov/static/programs/teachers/about-this-program/images/manuscript.jpg'); background-size: cover;">
+
+    <section class="section" id="ch2" style="background: #111;">
         <div class="container reveal">
             <div class="text-box">
                 <div class="chapter-num">02</div>
                 <h2>扭曲的造像：語言作為一種抵抗</h2>
                 <div class="subsection">
                     <h3>2-1 語法的「小兒麻痺」</h3>
-                    <p></p>評論家劉紹銘曾以「小兒麻痺的文體」來形容七等生的語言，這反映了當時主流讀者對其文字的不適感。然而，對七等生而言，這種文法的顛倒與錯置，並非技巧的缺失，而是為了捕捉那轉瞬即逝、難以名狀的心理流動所必須付出的代價。他曾明言，當他以緊密的精神追索意念時，計較文法是極其不合理的事。這種語言的「殘疾」，實際上是對傳統流暢、優美白話文的一種激進反抗。優美的文字往往掩蓋了真實的醜陋與痛苦，而七等生選擇用生硬、冗長且扭曲的句式，強迫讀者停下思考，在閱讀的阻絆中，感受到生命本質的沈重與荒謬。他的精神在扭曲的文字中反而展現出最極致的健全與誠實。</p>
+                    <p>評論家劉紹銘曾以「小兒麻痺的文體」來形容七等生的語言，這反映了當時主流讀者對其文字的不適感。然而，對七等生而言，這種文法的顛倒與錯置，並非技巧的缺失，而是為了捕捉那轉瞬即逝、難以名狀的心理流動所必須付出的代價。他曾明言，當他以緊密的精神追索意念時，計較文法是極其不合理的事。這種語言的「殘疾」，實際上是對傳統流暢、優美白話文的一種激進反抗。優美的文字往往掩蓋了真實的醜陋與痛苦，而七等生選擇用生硬、冗長且扭曲的句式，強迫讀者停下思考，在閱讀的阻絆中，感受到生命本質的沈重與荒謬。他的精神在扭曲的文字中反而展現出最極致的健全與誠實。</p>
+                </div>
+                
+                <div class="interactive-tool sticky-note-wall">
+                    <p style="margin-bottom: 15px; font-weight: bold;">【語法實驗室】輸入你的文字，由 AI 模擬轉化為七等生風格：</p>
+                    <textarea id="userInput" placeholder="在此輸入你想要轉換的平庸文字...（例如：今天天氣很好，我跟朋友去吃飯。）"></textarea>
+                    <button class="sticky-btn" onclick="transformTextAI()">啟動語言游擊戰</button>
+                    <p id="sevenText">（等待輸入中...）</p>
                 </div>
                 <div class="subsection">
                     <h3>2-2 翻譯感的屏障</h3>
@@ -325,6 +349,7 @@
     </section>
 
     <section class="section" id="ch3">
+        <div id="flood-overlay"></div>
         <div class="container reveal">
             <div class="text-box">
                 <div class="chapter-num">03</div>
@@ -333,17 +358,15 @@
                     <h3>3-1 《我愛黑眼珠》</h3>
                     <p>1967 年發表的《我愛黑眼珠》，是一場關於人性與道德的終極試煉。一場洪水沖毀了城市的社會秩序，也沖毀了日常生活的虛偽假象。在洪水中，李龍第救助了一位溺水的妓女，並在擁抱與溫暖她的同時，拒絕相認在對面屋頂呼救的妻子。這部作品引發了長期的道德論戰，但若僅從倫理觀點分析，便會錯過其核心意義：這是一場「隔離美學」的展演。洪水是一個切斷現實的裝置，它讓李龍第內心隱藏的另一種人格——亞茲別，得以在與世隔絕的狀態下浮現。在那個瞬間，傳統的責任與義務都變得毫無意義，唯一真實的只有當下肉體的溫暖與求生的本能。這不是對婚姻的背叛，而是對真實自我的回歸。</p>
                     <div class="poll-box">
-                        <p style="margin-bottom: 20px;">當洪水切斷現實，你會選擇救妻子還是救妓女？</p>
-                        <button class="btn" onclick="vote('妻子')">維持原本認同</button>
+                        <p style="margin-bottom: 20px;">當洪水淹沒日常規範，你會選擇救妻子還是救妓女？</p>
+                        <button class="btn" onclick="vote('妻子')">維持現實認同</button>
                         <button class="btn" onclick="vote('妓女')">選擇當下誠實</button>
-                        <div id="vote-result" style="margin-top: 20px; color: var(--sitcon-blue); font-style: italic;">
-                        </div>
+                        <div id="vote-result" style="margin-top: 20px; color: var(--sitcon-blue); font-style: italic;"></div>
                     </div>
                 </div>
             </div>
             <div class="image-box">
-                <img src="https://dcm.s3.hicloud.net.tw/new/excel/object/2023-07-12/680d2213-f60d-4d92-8c8c-980052d5cbea/collection/f6a5af0d-5491-4994-b5d6-38cc6d70c43a/8d8d3668-5897-4235-bd12-eeff00294445_f.jpg"
-                    alt="我愛黑眼珠封面">
+                <img src="https://dcm.s3.hicloud.net.tw/new/excel/object/2023-07-12/680d2213-f60d-4d92-8c8c-980052d5cbea/collection/f6a5af0d-5491-4994-b5d6-38cc6d70c43a/8d8d3668-5897-4235-bd12-eeff00294445_f.jpg" alt="封面">
                 <p class="img-caption">《我愛黑眼珠》書封意象</p>
             </div>
         </div>
@@ -355,15 +378,15 @@
                 <div class="chapter-num">04</div>
                 <h2>削瘦的終焉：歷史塵埃裡的純粹回響</h2>
                 <div class="subsection">
-                    <h3>4-1 現代主義的在地化實踐</h3>
-                    <p>七等生證明了現代主義並非僅是西方的進口品，它可以與台灣本土的鄉村小鎮景觀完美融合。他未曾留學，卻以其驚人的直覺捕捉到了存在主義的精神核心，並將其在地化為一種「通霄式」的荒謬感。他的創作軌跡從 1960 年代延伸至 1990 年代，始終如一地堅持那種自敘、自白且帶有實驗性的風格。他對語言的破壞與重建，不僅影響了後來的先鋒派作家，更為台灣文學爭取到了最寬廣的自由度。他的重要性在於，他讓我們看見一個作家如何能在最匱乏、最封閉的政治現實中，守住一塊純粹屬於藝術與自我的領地。</p>
+                    <h3>4-1 現代主義在地化</h3>
+                    <p>七等生勇於凝視人性中的頹廢、沈淪與卑賤，並在這些被傳統道德視為廢墟的地方，尋找重建精神的火種。他筆下的人物往往是孤獨的「精神病患」或「異鄉人」，他們在正常的社會規範中感到窒息，唯有在死亡、瘋狂或極度的邊緣化中，才能獲得片刻的精神解放。對七等生而言，救贖之道往往隱藏在最令人不安的選擇之中。他拒絕那些廉價的人道主義與教化美學，而是要求每個人都必須在自己的生命洪水中，獨自面對那雙「黑眼珠」所代表的、最赤裸的自我。在道德的廢墟上，他建立起了一種基於個體誠實的新美學，這是一種只有在徹底放棄對集體的幻想後，才能獲得的冷靜與尊嚴。</p>
                 </div>
-                 <div class="subsection">
+                <div class="subsection">
                     <h3>4-2 如果我們也走進那片沙河</h3>
                     <p>當我們再次回到那片沈默的沙河。七等生留給我們的，不是一堆歷史答案，而是一個個未完成的質問。在當今這個資訊爆炸、集體情緒泛濫的時代，七等生那種削瘦、沈默且孤傲的姿態，反而顯得愈發珍貴。他告訴我們，人可以不為了政治而寫，不為了道德而寫，甚至不為了讀者而寫，而僅僅是為了在歷史的塵埃裡，發出一聲屬於個體的、最誠實的喟嘆。當你走出這座荒島，願你也能在繁雜的世界中，守住那雙不被蒙蔽的「黑眼珠」，並在自己的孤獨中，看見那份削瘦卻無比真實的力量。</p>
                 </div>
                 <div class="subsection">
-                    <h3>4-2 影音導覽：削瘦的靈魂</h3>
+                    <h3>4-3 影音導覽：削瘦的靈魂</h3>
                     <p>透過影像，我們能更貼近這位隱遁者的生命軌跡。願您也能在繁雜的世界中，守住那雙不被蒙蔽的「黑眼珠」。</p>
 
                     <div class="video-container">
@@ -384,20 +407,111 @@
     </footer>
 
     <script>
+        // 1. 滾動偵測與洪水上升特效
         function reveal() {
             var reveals = document.querySelectorAll(".reveal");
-            for (var i = 0; i < reveals.length; i++) {
-                var windowHeight = window.innerHeight;
-                var elementTop = reveals[i].getBoundingClientRect().top;
-                if (elementTop < windowHeight - 100) reveals[i].classList.add("active");
+            var scrollPos = window.scrollY;
+            var ch3 = document.getElementById('ch3');
+            var overlay = document.getElementById('flood-overlay');
+
+            reveals.forEach(el => {
+                if (el.getBoundingClientRect().top < window.innerHeight - 100) el.classList.add("active");
+            });
+
+            let ch3Top = ch3.offsetTop;
+            let ch3Height = ch3.offsetHeight;
+            if (scrollPos > ch3Top - 400 && scrollPos < ch3Top + ch3Height) {
+                let opacity = (scrollPos - (ch3Top - 400)) / ch3Height;
+                overlay.style.background = `rgba(0, 80, 150, ${Math.min(opacity * 0.4, 0.4)})`;
             }
         }
         window.addEventListener("scroll", reveal);
         window.onload = reveal;
 
+        // 2. 身分滑桿
+        const slider = document.getElementById('identitySlider');
+        const idText = document.getElementById('identityText');
+        slider.addEventListener('input', () => {
+            let val = slider.value;
+            idText.style.letterSpacing = `${val * 1}px`;
+            idText.style.opacity = 1 - (val * 0.05);
+            idText.innerText = val > 5 ? "你選擇了邊緣，這正是精神解放的開始。" : "他在體制的夾縫中，尋找寫作的自由。";
+        });
+
+        // --- 新增：3. AI 語法風格模擬器 (Rule-based Simulation) ---
+        function transformTextAI() {
+    const inputField = document.getElementById('userInput');
+    const outputField = document.getElementById('sevenText');
+    let text = inputField.value.trim();
+
+    if (text === "") {
+        outputField.innerText = "（請先輸入文字，讓靈魂開始沈澱...）";
+        return;
+    }
+
+    // 1. 核心詞彙的「歐化與陌生化」替換 
+    const substitutions = {
+        "的": "之", "了": "之完成", "著": "之持續態", "很": "極其地",
+        "我們": "我等個體", "世界": "這具大的牢籠", "家": "寄居之所",
+        "看見": "凝視著那深淵般的", "孤獨": "絕對之隔離狀態",
+        "因為": "基於此種不可逆之因果，", "所以": "遂致使了"
+    };
+    
+    for (let key in substitutions) {
+        text = text.split(key).join(substitutions[key]);
+    }
+
+    // 2. 擴充「語法阻斷」隨機庫 
+    const interruptions = [
+        "，亦即，", "——彷彿是某種異質的——", "，或許在某種意識的縫隙中，", 
+        "——這絕非偶然地——", "，在那被切斷的連結裡，", "（以此種削瘦的姿態）"
+    ];
+
+    // 3. 擴充「存在主義式」開頭與結尾 [cite: 122, 127]
+    const prefixes = [
+        "在我那日漸沈默且削瘦的靈魂深處，我感知到", 
+        "關於此事，若以一種徹底隔離的姿態審視，即是",
+        "在通霄那冷冽的海風吹拂下，我被迫承認",
+        "這是一個關於崩壞語法的實驗，我發現"
+    ];
+    
+    const suffixes = [
+        "，這便是一種存在的荒謬與必然。", 
+        "，此種狀態維持著一種扭曲的、不被馴服的張力。", 
+        "，終究要回歸到個體那孤絕且無人知曉的荒島之中。",
+        "，這是我在文字縫隙中為自由保留的最後一塊淨土。"
+    ];
+
+    // 4. 隨機風格變形：隨機挑選一種轉換邏輯
+    const mode = Math.floor(Math.random() * 3);
+    let result = "";
+
+    if (mode === 0) {
+        // 【隔離模式】：插入大量破折號
+        let parts = text.split('，');
+        result = parts.map(p => p + (Math.random() > 0.5 ? interruptions[Math.floor(Math.random() * interruptions.length)] : "")).join("");
+    } else if (mode === 1) {
+        // 【重複模式】：模仿王文興式的強調，重複主詞 
+        result = text.replace("我", "我，我這個削瘦的個體，");
+    } else {
+        // 【顛倒模式】：將結尾語氣前置
+        result = "那是不可言說的，關於" + text;
+    }
+
+    // 5. 隨機組合框架
+    const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const randomSuffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+
+    outputField.innerText = `「${randomPrefix}${result}${randomSuffix}」`;
+    outputField.style.fontFamily = "'Noto Serif TC', serif";
+}   
+           
+        // ---------------------------------------------------------
+
+        // 4. 投票功能
         function vote(choice) {
             const res = document.getElementById('vote-result');
-            res.innerText = choice === '妻子' ? "你選擇了社會角色。但洪水後，這份認同是否依然真實？" : "你選擇了亞茲別。在隔離狀態下，誠實才是救贖的起點。";
+            res.innerText = choice === '妻子' ? "你選擇了社會身分的李龍第，但洪水後的認同是否依然真實？" : "你選擇了亞茲別，在隔離中，誠實地面對自我的欲望。";
         }
     </script>
 </body>
